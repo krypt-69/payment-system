@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .order-details { background: #f8f9fa; padding: 20px; border-radius: 5px; }
+        .payment-instructions { background: #fff3cd; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .ussd-code { 
+            background: #000; 
+            color: #fff; 
+            padding: 15px; 
+            font-family: monospace; 
+            font-size: 18px;
+            text-align: center;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .pay-button {
+            display: block;
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>✅ Order Received!</h1>
+    
+    <div class="order-details">
+        <h2>Order Details</h2>
+        <p><strong>Customer Name:</strong> {{ customer_name }}</p>
+        <p><strong>Order Reference:</strong> {{ reference }}</p>
+        <p><strong>Items:</strong></p>
+        <ul>
+            {% for item in order_details %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        <p><strong>Total Amount: KSh {{ total }}</strong></p>
+    </div>
+
+    <div class="payment-instructions">
+        <h2>💰 Complete Payment via M-Pesa</h2>
+        
+        <!-- Auto-dial Option -->
+        <a href="tel:{{ ussd_code }}" class="pay-button">
+            📞 Click to Auto-Dial M-Pesa
+        </a>
+        
+        <p><strong>Or manually dial this code:</strong></p>
+        <div class="ussd-code" id="ussdCode">
+            {{ ussd_code }}
+        </div>
+        <button onclick="copyToClipboard()" style="padding: 10px; margin: 5px;">
+            📋 Copy USSD Code
+        </button>
+
+        <h3>Payment Steps:</h3>
+        <ol>
+            <li>Click the auto-dial button OR copy and dial the USSD code above</li>
+            <li>Enter your M-Pesa PIN when prompted</li>
+            <li>Confirm payment of <strong>KSh {{ total }}</strong></li>
+            <li>Wait for confirmation message</li>
+            <li>Your order will be prepared automatically once payment is confirmed</li>
+        </ol>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const ussdCode = document.getElementById('ussdCode').textContent;
+            navigator.clipboard.writeText(ussdCode).then(() => {
+                alert('USSD code copied! Paste it in your phone dialer.');
+            });
+        }
+    </script>
+</body>
+</html>
