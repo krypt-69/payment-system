@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant Menu</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .menu-category { margin: 20px 0; }
+        .menu-item { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-info { flex-grow: 1; }
+        .item-name { font-weight: bold; }
+        .item-price { color: #28a745; font-weight: bold; }
+        .order-btn { 
+            background: #28a745; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .order-summary {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px;
+            border-top: 2px solid #28a745;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>🍽️ Restaurant Menu</h1>
+    
+    <form method="POST" action="/order">
+        <!-- Customer Name -->
+        <div style="margin: 20px 0;">
+            <label for="customer_name"><strong>Your Name (as it appears in M-Pesa):</strong></label><br>
+            <input type="text" id="customer_name" name="customer_name" required 
+                   style="padding: 10px; width: 300px; margin: 10px 0;"
+                   placeholder="Enter your full name">
+        </div>
+
+        <!-- Menu Items -->
+        {% for category in ['Main', 'Sides', 'Drinks'] %}
+        <div class="menu-category">
+            <h2>{{ category }}</h2>
+            {% for item in menu_items %}
+                {% if item.category == category %}
+                <div class="menu-item">
+                    <div class="item-info">
+                        <span class="item-name">{{ item.name }}</span>
+                    </div>
+                    <div>
+                        <span class="item-price">KSh {{ item.price }}</span>
+                        <input type="checkbox" name="items" value="{{ item.id }}" 
+                               onchange="updateTotal()" style="margin-left: 15px;">
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <strong>Selected Items: </strong><span id="selectedCount">0</span><br>
+            <strong>Total Amount: KSh </strong><span id="totalAmount">0</span><br>
+            <button type="submit" class="order-btn" id="submitBtn" disabled>
+                Place Order & Pay via M-Pesa
+            </button>
+        </div>
+    </form>
+
+    <script>
+        function updateTotal() {
+            const checkboxes = document.querySelectorAll('input[name="items"]:checked');
+            const total = Array.from(checkboxes).reduce((sum, checkbox) => {
+                const itemId = checkbox.value;
+                const item = {{ menu_items | tojson }};
+                const price = item.find(x => x.id == itemId).price;
+                return sum + price;
+            }, 0);
+            
+            document.getElementById('selectedCount').textContent = checkboxes.length;
+            document.getElementById('totalAmount').textContent = total;
+            document.getElementById('submitBtn').disabled = checkboxes.length === 0;
+        }
+    </script>
+</body>
+</html>
