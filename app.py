@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect
 import sqlite3
 import json
 import re
 from datetime import datetime
 import threading
 import time
+import hashlib
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -12,7 +13,7 @@ app.secret_key = 'your_secret_key_here'
 # Sample menu data
 MENU_ITEMS = [
     {"id": 1, "name": "rice", "price": 1500, "category": "Main"},
-    {"id": 2, "name": "ndengu", "price": 30, "category": "Main"},
+    {"id": 2, "name": "ndengu", "price":1000, "category": "Main"},
     {"id": 3, "name": "ugali", "price": 40, "category": "Sides"},
     {"id": 4, "name": "fulu", "price": 30, "category": "Main"},
     {"id": 5, "name": "omena", "price": 30, "category": "Main"},
@@ -92,8 +93,187 @@ def create_order():
                          order_id=order_id)
 
 # Admin Routes
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 def admin_dashboard():
+    # Check if user is already logged in
+    if request.method == 'GET' and session.get('admin_logged_in'):
+        return render_admin_dashboard()
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        if username == 'admin' and hashed_password == hashlib.sha256('Bingohotelbondo'.encode()).hexdigest():
+            session['admin_logged_in'] = True
+            return render_admin_dashboard()
+        else:
+            return '''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Admin Login</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        background: #1a1a1a; 
+                        color: white;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .login-container {
+                        background: #2d2d2d;
+                        padding: 40px;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        width: 300px;
+                    }
+                    .login-container h2 {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        color: #3498db;
+                    }
+                    .form-group {
+                        margin-bottom: 20px;
+                    }
+                    .form-group label {
+                        display: block;
+                        margin-bottom: 5px;
+                        color: #ccc;
+                    }
+                    .form-group input {
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #444;
+                        border-radius: 5px;
+                        background: #1a1a1a;
+                        color: white;
+                        box-sizing: border-box;
+                    }
+                    .login-btn {
+                        width: 100%;
+                        padding: 12px;
+                        background: #3498db;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 16px;
+                    }
+                    .login-btn:hover {
+                        background: #2980b9;
+                    }
+                    .error {
+                        color: #e74c3c;
+                        text-align: center;
+                        margin-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="login-container">
+                    <h2>Admin Login</h2>
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="login-btn">Login</button>
+                        <div class="error">Invalid username or password</div>
+                    </form>
+                </div>
+            </body>
+            </html>
+            ''', 401
+    
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Admin Login</title>
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                background: #1a1a1a; 
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .login-container {
+                background: #2d2d2d;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                width: 300px;
+            }
+            .login-container h2 {
+                text-align: center;
+                margin-bottom: 30px;
+                color: #3498db;
+            }
+            .form-group {
+                margin-bottom: 20px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                color: #ccc;
+            }
+            .form-group input {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #444;
+                border-radius: 5px;
+                background: #1a1a1a;
+                color: white;
+                box-sizing: border-box;
+            }
+            .login-btn {
+                width: 100%;
+                padding: 12px;
+                background: #3498db;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+            }
+            .login-btn:hover {
+                background: #2980b9;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <h2>Admin Login</h2>
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    '''
+
+def render_admin_dashboard():
     conn = sqlite3.connect('orders.db')
     c = conn.cursor()
     
@@ -116,7 +296,11 @@ def admin_dashboard():
                          completed_orders=completed_orders,
                          transactions=transactions)
 
-# API endpoints for real-time updates
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    return redirect('/') 
+
 @app.route('/api/orders')
 def get_orders():
     conn = sqlite3.connect('orders.db')
@@ -147,7 +331,7 @@ def check_payments():
     c = conn.cursor()
     
     # Get all pending orders
-    c.execute('''SELECT * FROM orders WHERE status = 'pending'\n''')
+    c.execute('''SELECT * FROM orders WHERE status = 'pending' ''')
     pending_orders = c.fetchall()
     
     # Get all transactions
@@ -155,22 +339,45 @@ def check_payments():
     transactions = c.fetchall()
     
     # Match transactions to orders
+    matched_count = 0
+    matched_orders = []
+    
     for transaction in transactions:
-        name = transaction[1]  # reference from transaction
-        amount = transaction[2]  # amount from transaction
+        transaction_name = transaction[1]  # name from transaction
+        transaction_amount = transaction[2]  # amount from transaction
         
         # Find matching order
         for order in pending_orders:
-            if order[1] == name and order[3] == amount:  # reference and amount match
-                # Update order status
-                c.execute('''UPDATE orders SET status = 'paid' WHERE id = ?''', (order[0],))
+            order_customer_name = order[1]  # customer name from order
+            order_amount = order[3]  # amount from order
+            
+            # Check if both name AND amount match
+            if order_customer_name.lower().strip() == transaction_name.lower().strip() and order_amount == transaction_amount:
+                # Update order status to 'completed'
+                c.execute('''UPDATE orders SET status = 'completed' WHERE id = ?''', (order[0],))
                 conn.commit()
-                print(f"Order {order[0]} marked as paid!")
+                
+                # Add to matched orders list for response
+                matched_orders.append({
+                    'order_id': order[0],
+                    'customer_name': order_customer_name,
+                    'amount': order_amount,
+                    'items': order[2]
+                })
+                
+                matched_count += 1
+                break  # Move to next transaction after finding a match
     
     conn.close()
-    return jsonify({'status': 'checked'})
-
-# M-Pesa SMS Parser (Simulated - you'll integrate with actual SMS reading)
+    
+    if matched_count > 0:
+        return jsonify({
+            'status': 'success', 
+            'message': f'Completed {matched_count} order(s)',
+            'completed_orders': matched_orders
+        })
+    else:
+        return jsonify({'status': 'checked', 'message': 'No matching payments found'})
 def parse_mpesa_sms(sms_text):
     """Parse M-Pesa SMS to extract name, amount, reference"""
     patterns = [
