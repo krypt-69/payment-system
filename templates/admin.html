@@ -1,104 +1,762 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .section { margin: 30px 30px;
-        align-items:center;
-        padding: 10px;
-        color:greenyellows;
-        background-color: darkgrey;
-         letter-spacing: 2px}
-        .order-card { 
-            border: 1px solid #ddd; 
-            padding: 15px; 
-            margin: 10px 0; 
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #2c3e50;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #1a1a1a;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .logout-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
             border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+            margin-left: 10px;
         }
-        #customer_name {
-            color: green;
-            padding: 10px;
+
+        .logout-btn:hover {
+            background: #c0392b;
         }
-    
-    
-        .pending { border-left: 4px solid #ffc107; background: #fff3cd; }
-        .paid { border-left: 4px solid #28a745; background: #d4edda; }
-        .transaction { 
-            border-left: 4px solid #007bff; 
-            background: #d1ecf1; 
-            padding: 10px; 
-            margin: 5px 5px;
+
+        header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
             font-size: 14px;
         }
-        .matched { background: #d4edda; }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #2ecc71;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-paid {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-transaction {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .order-card {
+            border-left: 4px solid;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .pending {
+            border-left-color: var(--warning-color);
+            background: linear-gradient(to right, #fff3cd 0%, white 5%);
+        }
+
+        .paid {
+            border-left-color: var(--success-color);
+            background: linear-gradient(to right, #d4edda 0%, white 5%);
+        }
+
+        .transaction {
+            border-left-color: var(--primary-color);
+            background: linear-gradient(to right, #d1ecf1 0%, white 5%);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .matched {
+            background: linear-gradient(to right, #d4edda 0%, white 5%);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .order-id {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--secondary-color);
+        }
+
+        .customer-name {
+            color: var(--success-color);
+            font-weight: 600;
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-weight: 500;
+        }
+
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .item-tag {
+            background-color: #f1f8ff;
+            border: 1px solid #d1e3ff;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            color: #0366d6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .clear-all-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+            margin-left: 10px;
+        }
+
+        .clear-all-btn:hover {
+            background: #c0392b;
+        }
+
+        .manual-refresh-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+            margin-left: 10px;
+        }
+
+        .manual-refresh-btn:hover {
+            background: #2980b9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .status-indicator {
+                margin-top: 10px;
+            }
+            
+            .order-details {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Admin Dashboard</h1>
-      <div class="section">
-        <h2>Paid & Completed Orders</h2>
-        {% if completed_orders %}
-            {% for order in completed_orders %}
-            <div class="order-card paid">
-                <strong>Order #{{ order[0] }}</strong><br>
-                <strong>Customer:</strong> {{ order[1] }}<br>
-                <strong>Items:</strong> {{ order[2] }}<br>
-                <strong>Amount:</strong> KSh {{ order[3] }}<br>
-                <strong>Reference:</strong> {{ order[5] }}<br>
-                <strong>Time:</strong> {{ order[6] }}
+    <!-- Notification for completed orders -->
+    <div id="notification" class="notification"></div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>Admin Dashboard</h1>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Live Updates</span>
+                    <button class="manual-refresh-btn" onclick="manualRefresh()" style="margin-left: 15px;">Refresh Data</button>
+                </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p>No completed orders</p>
-        {% endif %}
-    </div>
-    
-    <!-- Pending Orders -->
-    <div class="section">
-        <h2>Pending Orders (Awaiting Payment)</h2>
-        {% if pending_orders %}
-            {% for order in pending_orders %}
-            <div class="order-card pending" style="align-content: center;">
-                <strong>Order #{{ order[0] }}</strong><br>
-                <strong>Customer:</strong> <h1><div id="customer_name">{{ order[1] }}</div></h1><br>
-                <strong>Items:</strong> {{ order[2] }}<br>
-                <strong>Amount:</strong> KSh {{ order[3] }}<br>
-                <strong>Reference:</strong> {{ order[5] }}<br>
-                <strong>Time:</strong> {{ order[6] }}
+            <button class="logout-btn" onclick="logout()" style="margin-left: 10px;">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <h3>Completed Orders</h3>
+                <div class="stat-value" id="completedCount">{{ completed_orders|length if completed_orders else 0 }}</div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p>No pending orders</p>
-        {% endif %}
+            <div class="stat-card">
+                <h3>Pending Orders</h3>
+                <div class="stat-value" id="pendingCount">{{ pending_orders|length if pending_orders else 0 }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Recent Transactions</h3>
+                <div class="stat-value" id="transactionCount">{{ transactions|length if transactions else 0 }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Revenue</h3>
+                <div class="stat-value">KSh <span id="totalRevenue">12,450</span></div>
+            </div>
+        </div>
+
+        <!-- Completed Orders -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Completed Orders</h2>
+                <div>
+                    <span class="badge badge-paid">Paid & Processed</span>
+                    <button class="clear-all-btn" onclick="clearAllCompleted()">Clear All</button>
+                </div>
+            </div>
+            <div id="completedOrdersContainer">
+                {% if completed_orders %}
+                    {% for order in completed_orders %}
+                    <div class="order-card paid" data-order-id="{{ order[0] }}">
+                        <button class="delete-btn" onclick="deleteOrder(this, 'completed')">×</button>
+                        <div class="order-header">
+                            <div class="order-id">Order #{{ order[0] }}</div>
+                            <div class="time">{{ order[6] }}</div>
+                        </div>
+                        <div class="customer-name">{{ order[1] }}</div>
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Items</span>
+                                <div class="items-list">
+                                    {% for item in order[2].split(',') %}
+                                    <span class="item-tag">{{ item.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Amount</span>
+                                <span class="detail-value">KSh {{ order[3] }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Reference</span>
+                                <span class="detail-value">{{ order[5] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" id="emptyCompleted">
+                        <i>✅</i>
+                        <p>No completed orders</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pending Orders -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Pending Orders</h2>
+                <div>
+                    <span class="badge badge-pending">Awaiting Payment</span>
+                    <button class="clear-all-btn" onclick="clearAllPending()">Clear All</button>
+                </div>
+            </div>
+            <div id="pendingOrdersContainer">
+                {% if pending_orders %}
+                    {% for order in pending_orders %}
+                    <div class="order-card pending" data-order-id="{{ order[0] }}">
+                        <button class="delete-btn" onclick="deleteOrder(this, 'pending')">×</button>
+                        <div class="order-header">
+                            <div class="order-id">Order #{{ order[0] }}</div>
+                            <div class="time">{{ order[6] }}</div>
+                        </div>
+                        <div class="customer-name">{{ order[1] }}</div>
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Items</span>
+                                <div class="items-list">
+                                    {% for item in order[2].split(',') %}
+                                    <span class="item-tag">{{ item.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Amount</span>
+                                <span class="detail-value">KSh {{ order[3] }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Reference</span>
+                                <span class="detail-value">{{ order[5] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" id="emptyPending">
+                        <i>📋</i>
+                        <p>No pending orders</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Recent M-Pesa Transactions</h2>
+                <span class="badge badge-transaction">Latest</span>
+            </div>
+            <div id="transactionsContainer">
+                {% if transactions %}
+                    {% for txn in transactions %}
+                    <div class="transaction {% if txn[4] %}matched{% endif %}">
+                        <div class="order-header">
+                            <div><strong>From:</strong> {{ txn[1] }}</div>
+                            <div class="time">{{ txn[6] }}</div>
+                        </div>
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Amount</span>
+                                <span class="detail-value">KSh {{ txn[2] }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Reference</span>
+                                <span class="detail-value">{{ txn[3] }}</span>
+                            </div>
+                        </div>
+                        {% if txn[4] %}
+                        <div style="color: var(--success-color); margin-top: 10px; font-weight: 600;">
+                            ✅ Matched to Order #{{ txn[4] }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i>💰</i>
+                        <p>No transactions yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
-    <!-- Completed Orders -->
-  
-
-    <!-- Recent Transactions -->
-    <div class="section">
-        <h2>💰 Recent M-Pesa Transactions</h2>
-        {% if transactions %}
-            {% for txn in transactions %}
-            <div class="transaction {% if txn[4] %}matched{% endif %}">
-                <strong>From:</strong> {{ txn[1] }}<br>
-                <strong>Amount:</strong> KSh {{ txn[2] }}<br>
-                <strong>Reference:</strong> {{ txn[3] }}<br>
-                <strong>Time:</strong> {{ txn[6] }}<br>
-                {% if txn[4] %}<span style="color: green;">✅ Matched to Order #{{ txn[4] }}</span>{% endif %}
-            </div>
-            {% endfor %}
-        {% else %}
-            <p>No transactions yet</p>
-        {% endif %}
-    </div>
+    <footer>
+        <div class="container">
+            <p>Manual refresh only - Orders persist until manually deleted</p>
+        </div>
+    </footer>
 
     <script>
-        // Auto-refresh every 10 seconds
-        setTimeout(() => {
+        // Function to check for new payments and update the UI
+        async function checkPayments() {
+            try {
+                const response = await fetch('/api/check_payments');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.completed_orders && data.completed_orders.length > 0) {
+                    // Show notification
+                    showNotification(`✅ ${data.completed_orders.length} order(s) completed!`);
+                    
+                    // Update the UI with completed orders
+                    updateCompletedOrders(data.completed_orders);
+                    
+                    // Update statistics
+                    updateStatistics();
+                }
+            } catch (error) {
+                console.error('Error checking payments:', error);
+            }
+        }
+
+        // Function to manually refresh all data from server
+        async function manualRefresh() {
+            showNotification('🔄 Refreshing data from server...');
+            // Simply reload the page to get fresh data from server
             window.location.reload();
-        }, 10000);
+        }
+
+        // Function to update completed orders in the UI
+        function updateCompletedOrders(completedOrders) {
+            const completedContainer = document.getElementById('completedOrdersContainer');
+            const emptyCompleted = document.getElementById('emptyCompleted');
+            
+            // Remove empty state if it exists
+            if (emptyCompleted) {
+                emptyCompleted.remove();
+            }
+            
+            // Add each completed order to the UI
+            completedOrders.forEach(order => {
+                // Remove from pending orders
+                const pendingOrder = document.querySelector(`.pending[data-order-id="${order.order_id}"]`);
+                if (pendingOrder) {
+                    pendingOrder.remove();
+                }
+                
+                // Create completed order card
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card paid';
+                orderCard.setAttribute('data-order-id', order.order_id);
+                orderCard.innerHTML = `
+                    <button class="delete-btn" onclick="deleteOrder(this, 'completed')">×</button>
+                    <div class="order-header">
+                        <div class="order-id">Order #${order.order_id}</div>
+                        <div class="time">${new Date().toLocaleString()}</div>
+                    </div>
+                    <div class="customer-name">${order.customer_name}</div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Items</span>
+                            <div class="items-list">
+                                ${order.items.split(',').map(item => 
+                                    `<span class="item-tag">${item.trim()}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Amount</span>
+                            <span class="detail-value">KSh ${order.amount}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Reference</span>
+                            <span class="detail-value">${order.customer_name}</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Add to the top of completed orders
+                completedContainer.insertBefore(orderCard, completedContainer.firstChild);
+            });
+
+            // Show empty state if no orders left in pending
+            updateEmptyStates();
+        }
+
+        // Function to delete individual order from UI
+        function deleteOrder(button, type) {
+            const orderCard = button.closest('.order-card');
+            orderCard.style.opacity = '0';
+            orderCard.style.transform = 'translateX(100%)';
+            
+            setTimeout(() => {
+                orderCard.remove();
+                updateStatistics();
+                updateEmptyStates();
+                
+                // Show notification
+                showNotification(`🗑️ Order removed from ${type} view`);
+            }, 300);
+        }
+
+        // Function to clear all completed orders from UI
+        function clearAllCompleted() {
+            const completedContainer = document.getElementById('completedOrdersContainer');
+            const completedOrders = completedContainer.querySelectorAll('.order-card.paid');
+            
+            if (completedOrders.length === 0) return;
+            
+            completedOrders.forEach(order => {
+                order.style.opacity = '0';
+                order.style.transform = 'translateX(100%)';
+                setTimeout(() => order.remove(), 300);
+            });
+            
+            setTimeout(() => {
+                updateStatistics();
+                updateEmptyStates();
+                showNotification('🗑️ All completed orders cleared from view');
+            }, 500);
+        }
+
+        // Function to clear all pending orders from UI
+        function clearAllPending() {
+            const pendingContainer = document.getElementById('pendingOrdersContainer');
+            const pendingOrders = pendingContainer.querySelectorAll('.order-card.pending');
+            
+            if (pendingOrders.length === 0) return;
+            
+            pendingOrders.forEach(order => {
+                order.style.opacity = '0';
+                order.style.transform = 'translateX(100%)';
+                setTimeout(() => order.remove(), 300);
+            });
+            
+            setTimeout(() => {
+                updateStatistics();
+                updateEmptyStates();
+                showNotification('🗑️ All pending orders cleared from view');
+            }, 500);
+        }
+
+        // Function to update empty states
+        function updateEmptyStates() {
+            const completedContainer = document.getElementById('completedOrdersContainer');
+            const pendingContainer = document.getElementById('pendingOrdersContainer');
+            
+            // Check completed orders
+            if (completedContainer.querySelectorAll('.order-card.paid').length === 0) {
+                if (!document.getElementById('emptyCompleted')) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.id = 'emptyCompleted';
+                    emptyState.innerHTML = '<i>✅</i><p>No completed orders</p>';
+                    completedContainer.appendChild(emptyState);
+                }
+            }
+            
+            // Check pending orders
+            if (pendingContainer.querySelectorAll('.order-card.pending').length === 0) {
+                if (!document.getElementById('emptyPending')) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.id = 'emptyPending';
+                    emptyState.innerHTML = '<i>📋</i><p>No pending orders</p>';
+                    pendingContainer.appendChild(emptyState);
+                }
+            }
+        }
+
+        // Function to update statistics
+        function updateStatistics() {
+            const completedCount = document.querySelectorAll('.paid').length;
+            const pendingCount = document.querySelectorAll('.pending').length;
+            
+            document.getElementById('completedCount').textContent = completedCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+        }
+
+        // Function to show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/admin/logout';
+            }
+        }
+
+        // Check for payments every 3 seconds (this only adds new completed orders)
+        setInterval(checkPayments, 3000);
+        
+        // NO AUTO-REFRESH - Orders will stay permanently until manually deleted
     </script>
 </body>
 </html>
